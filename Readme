@@ -1,0 +1,87 @@
+This is a spmle program which performs conversion of a PCM data into mp3.
+
+Public domain
+
+This is a  solution of the following task:
+
+Write a C/C++ commandline application that encodes a set of WAV files to MP3
+
+Requirements:
+(1) application is called with pathname as argument, e.g.
+<applicationname> F:\MyWavCollection all WAV-files contained directly in that
+folder are to be encoded to MP3
+(2) use all available CPU cores for the encoding process in an efficient way
+by utilizing multi-threading
+(3) statically link to lame encoder library
+(4) application should be compilable and runnable on Windows and Linux
+(5) the resulting MP3 files are to be placed within the same directory as the
+source WAV files, the filename extension should be changed appropriately to
+.MP3
+(6) non-WAV files in the given folder shall be ignored
+(7) multithreading shall be implemented by means of using Posix Threads (there
+exist implementations for Windows)
+(8) the Boost library shall not be used
+(9) the LAME encoder should be used with reasonable standard settings
+(e.g. quality based encoding with quality level "good")
+
+
+The WAV specification is rather inofficial, it is a container for some
+other data. The present implementation accepts only pure PCM encoded WAV files
+with valid fmt 16, others are ignored; the WAV file header must satisfy the
+structure described in the following WEB pages:
+  http://www-mmsp.ece.mcgill.ca/documents/AudioFormats/WAVE/WAVE.html
+  https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+
+This is a  pure C99 program (up to the Windows parts). Rationale:
+
+0. The ISO C++ standard does not include any language construct or library
+which supports concurrency.
+
+1. The lame library is a pure C code;
+
+2. According to the prescription, I have to use the POSIX threads without the
+boost library. Provided I stick to C++, I have to wrap POSIX threads to some
+C++ classes myself -- evidently, no chances to do this properly in a couple of
+days. At present, I have no my own (private) implementation of a C++ threads
+wrapper.
+
+The lame library is a thread safe now, but it is not possible (in my opinion)
+to encode in parallel the same file: at the end, we need  to flush
+the remaining buffers; flush "no gap" produces some extra padding which is not
+acceptable in my opinion, and, which is much more problematic, it preserves
+some pcm buffers. Of course, there exist Lame MT, fpMP3Enc, gogo-no-coda,
+etc. but I'm bound with a "pure" lime library.
+
+According to my experiments, time of encoding even short files is much longer
+(order of magnitude) then simple copying buffers form file to file.  This
+means that the simplest way to parallelize the process seems to be just to
+allow a worker completely encode one file buffer by buffer. The corresponding
+architecture is implemented in a code in the file 'lameWav2mp3.c', the code is 
+self-explained.
+
+The idea of a program is rather straightforward: the master (just a main
+program) starts a pool of workers and scans a specified directory. All found
+the WAV file names are queued in a single FIFO queue while workers are
+"eating" these entries from the other side of the queue. When a worker gets
+the file name, it opens the corresponding file, reads a header and, if it is a
+correct PCM, encodes the content into the .mp3 file.
+
+Alternatively one can implement the "multi-buffer" strategy. The idea is to
+completely separate encoding and I/O processes, e.g. one reading
+thread ("Reader") reads buffers and queues them up, one writing thread
+("Writer") writes ready buffers, and a pool of workers performs encoding.
+
+This was also implemented. In addition to Reader and Writer there was also 
+and a header provider thread ("HProvider") which reads .wav headers, 
+determines parameters and looks whether the file is convertible.
+
+The Master (main thread) scans directory and queues found names up to
+HProvider.  The HProvider reads headers and sends results to the Reader. The
+Reader reads blocks into a reading buffers and queues them up to workers. The
+Worker performs encoding, queues used reading buffer up to a free pool, queues
+resulting buffer up to the Writer and waits next buffer from the Reader. The
+Writer writes the encoded buffer to the disk an returns it back to the free
+pool. The corresponding architecture was also implemented and tested but it
+appears that there is no any benefit of such a complicated structure.  The
+corresponding source file may be provided on request (the corresponding
+program is unstable and was compiled and tested only under Linux).
