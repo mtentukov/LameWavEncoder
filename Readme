@@ -1,9 +1,10 @@
-This is a spmle program which performs conversion of a PCM data into mp3.
+This is a sipmle program which performs conversion of a PCM data into mp3.
 
-Public domain
+Public domain.
 
 This is a  solution of the following task:
 
+>>>>>>>>>>>>>>>>>>>>>>>
 Write a C/C++ commandline application that encodes a set of WAV files to MP3
 
 Requirements:
@@ -23,7 +24,7 @@ exist implementations for Windows)
 (8) the Boost library shall not be used
 (9) the LAME encoder should be used with reasonable standard settings
 (e.g. quality based encoding with quality level "good")
-
+<<<<<<<<<<<<<<<<<<<<<<
 
 The WAV specification is rather inofficial, it is a container for some
 other data. The present implementation accepts only pure PCM encoded WAV files
@@ -85,3 +86,6 @@ pool. The corresponding architecture was also implemented and tested but it
 appears that there is no any benefit of such a complicated structure.  The
 corresponding source file may be provided on request (the corresponding
 program is unstable and was compiled and tested only under Linux).
+
+Best regards,
+   M. Tentyukov

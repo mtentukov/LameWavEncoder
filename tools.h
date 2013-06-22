@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-//#include <math.h>
 
 #ifdef _WIN32
 #define SYSTEM_DIR_DELIMITER '\\'

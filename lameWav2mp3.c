@@ -71,7 +71,6 @@ typedef pthread_t pool_t ;
 
 pool_t *g_pool = NULL;
 
-/*Just for fun:*/
 static unsigned g_totalConverted = 0;
 static pthread_mutex_t g_mTotalConverted = PTHREAD_MUTEX_INITIALIZER;
 
@@ -203,11 +202,11 @@ static char *readHeader (wav_hdr_t *hdr, FILE **pcm, char *fileName)
          free (fullname);
          return NULL;
       }
-   }
+   }/*:Read header*/
    return fullname;
 }/*readHeader*/
 
-/*some cleanup*/
+/*some cleanup:*/
 static void cln(int id, char *fileName, FILE *pcm, FILE *mp3, unsigned int *counter)
 {
    if (NULL != fileName)
@@ -255,7 +254,8 @@ static void theWorker(int id)
       pthread_mutex_unlock(&g_mFileName);
       if (NULL == fileName)
       {
-        /*Somebody was faster :( Impossible, BTW! Intrnal error...*/
+        /*Somebody was faster :( */
+        /*BTW, impossible in this incarnation! Just intrnal error...*/
         continue;
       }
 
@@ -317,7 +317,7 @@ static void theWorker(int id)
          continue;
       }
 #endif
-      /*Can't create file at the scan time:( :*/
+      /*Can't create a file at the scan time:( :*/
       pthread_mutex_lock(&g_mEndScan);      
       mp3 = fopen(fileName, "wb");
       pthread_mutex_unlock(&g_mEndScan);
@@ -442,7 +442,7 @@ int main(int argc, char *argv[])
 
    /*Save a name of a given directory to scan as ".../
      ( ...or \ on Windows)"*/
-   for (i=0; '\0' != argv[1][i]; ++i)
+   for (i = 0; '\0' != argv[1][i]; ++i)
    {
       if (i >= MAX_PATH_LENGTH - 1)
       {
@@ -530,6 +530,6 @@ int main(int argc, char *argv[])
    message("\n%u files converted\n", g_totalConverted);
    /*TODO: cleanup*/
 
-   /*Well, next step... in next life!*/
+   /*Well, next step... in the next life!*/
    return 0;
 }/*main*/
